@@ -1,4 +1,5 @@
 local constants = require("wmc.constants")
+local logger = require("wmc.logger")
 local utils = require("wmc.utils")
 
 ---@class wmc.ranker
@@ -26,7 +27,7 @@ end
 
 ---@private
 function M:start_watcher()
-	local watcher = utils.set_interval(500, function()
+	local watcher, err = utils.set_interval(500, function()
 		if self.last_input_sec >= constants.RANK_IDLE_TTL_SEC then
 			self.combo = ""
 			self.last_input_sec = 0
@@ -41,8 +42,9 @@ function M:start_watcher()
 		self.last_input_sec = self.last_input_sec + 0.5
 	end)
 
-	-- TODO logging
-	assert(watcher)
+	if not watcher then
+		error("Cannot start timer, error: " .. err)
+	end
 
 	self.watcher = watcher
 end
@@ -68,6 +70,10 @@ function M:on_key()
 
 		-- TODO ui display, only after rank change
 		print(self.rank or "")
+
+		logger.log(
+			("%s: %d, %s: %f, %s: %s"):format("Length", #self.combo, "Entropy", combo_entropy, "Rank", self.rank)
+		)
 	end
 end
 
