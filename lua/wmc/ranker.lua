@@ -1,12 +1,14 @@
 local constants = require("wmc.constants")
 local logger = require("wmc.logger")
 local utils = require("wmc.utils")
+local ui = require("wmc.ui.text")
 
 ---@class wmc.ranker
 ---@field private combo string
----@field private rank wmc.RANK_LABEL|nil
+---@field private rank wmc.rank_label|nil ---? ring buffer
 ---@field private last_input_sec number
 ---@field private watcher uv.uv_timer_t
+---@field private ui wmc.text_ui
 local M = {}
 
 ---@return wmc.ranker
@@ -16,6 +18,7 @@ function M:new()
 		rank = nil,
 		last_input_sec = 0,
 		watcher = nil,
+		ui = ui:new(),
 	}
 	setmetatable(ranker, self)
 	self.__index = self
@@ -33,8 +36,7 @@ function M:start_watcher()
 			self.last_input_sec = 0
 			self.rank = nil
 
-			-- TOOD ui clear
-			print("")
+			self.ui:clear()
 
 			return
 		end
@@ -66,13 +68,24 @@ function M:on_key()
 		self.combo = self.combo .. entered_key
 
 		local combo_entropy = self:get_combo_entropy()
-		self.rank = self:get_display_rank(combo_entropy)
+		local new_rank = self:get_display_rank(combo_entropy)
 
-		-- TODO ui display, only after rank change
-		print(self.rank or "")
+		if new_rank and new_rank ~= self.rank then
+			self.ui:render(new_rank)
+		end
+
+		self.rank = new_rank
 
 		logger.log(
-			("%s: %d, %s: %f, %s: %s"):format("Length", #self.combo, "Entropy", combo_entropy, "Rank", self.rank)
+			("%s: %d, %s: %f, %s: %s\n%s"):format(
+				"Length",
+				#self.combo,
+				"Entropy",
+				combo_entropy,
+				"Rank",
+				self.rank,
+				self.combo
+			)
 		)
 	end
 end
@@ -105,7 +118,7 @@ function M:get_combo_entropy()
 end
 
 ---@param combo_entropy number
----@return wmc.RANK_LABEL|nil
+---@return wmc.rank_label|nil
 function M:get_display_rank(combo_entropy)
 	if not self.rank and combo_entropy > 1.5 then
 		return constants.RANK_LABEL.DULL

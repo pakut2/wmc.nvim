@@ -2,6 +2,7 @@ local M = {}
 
 ---@class (exact) wmc.config
 ---@field logger wmc.config.logger
+---@field image_ui_enabled boolean
 
 ---@class (exact) wmc.config.logger
 ---@field enabled boolean
@@ -13,6 +14,7 @@ M.default = {
 		enabled = false,
 		log_file_path = vim.fn.stdpath("data") .. "/wmc.log",
 	},
+	image_ui_enabled = false,
 }
 
 ---@type wmc.config
@@ -35,10 +37,11 @@ end
 function M.validate(config)
 	local validation_errors = {}
 
-	M.validate_entry({ logger = { config.logger, "table", true } }, validation_errors)
-
+	M.validate_entry({ logger = { config.logger, "table", false } }, validation_errors)
 	M.validate_entry({ enabled = { config.logger.enabled, "boolean", false } }, validation_errors)
 	M.validate_entry({ log_file_path = { config.logger.log_file_path, "string", true } }, validation_errors)
+
+	M.validate_entry({ image_ui_enabled = { config.image_ui_enabled, "boolean", false } }, validation_errors)
 
 	if #validation_errors == 0 then
 		return nil

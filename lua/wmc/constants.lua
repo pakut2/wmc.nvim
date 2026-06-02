@@ -2,7 +2,7 @@ local M = {}
 
 M.RANK_IDLE_TTL_SEC = 1.5
 
----@enum wmc.RANK_LABEL
+---@enum wmc.rank_label
 M.RANK_LABEL = {
 	DULL = "Dull",
 	COOL = "Cool!",
@@ -11,12 +11,12 @@ M.RANK_LABEL = {
 	STYLISH = "Stylish!",
 }
 
----@class wmc.RANK
----@field label wmc.RANK_LABEL
+---@class wmc.rank
+---@field label wmc.rank_label
 ---@field min_entropy number
 ---@field min_length integer
 
----@type table<wmc.RANK_LABEL, wmc.RANK>
+---@type table<wmc.rank_label, wmc.rank>
 M.RANK_PROGRESSION = {
 	[M.RANK_LABEL.DULL] = {
 		label = M.RANK_LABEL.COOL,
