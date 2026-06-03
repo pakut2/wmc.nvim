@@ -5,6 +5,7 @@ local ui = require("wmc.ui.text")
 
 ---@class wmc.ranker
 ---@field private combo string
+---@field private is_combo_valid boolean
 ---@field private rank wmc.rank_label|nil ---? ring buffer
 ---@field private last_input_sec number
 ---@field private watcher uv.uv_timer_t
@@ -15,6 +16,7 @@ local M = {}
 function M:new()
 	local ranker = {
 		combo = "",
+		is_combo_valid = true,
 		rank = nil,
 		last_input_sec = 0,
 		watcher = nil,
@@ -23,16 +25,17 @@ function M:new()
 	setmetatable(ranker, self)
 	self.__index = self
 
-	ranker:start_watcher()
+	ranker:start_combo_watcher()
 
 	return ranker
 end
 
 ---@private
-function M:start_watcher()
+function M:start_combo_watcher()
 	local watcher, err = utils.set_interval(500, function()
 		if self.last_input_sec >= constants.RANK_IDLE_TTL_SEC then
 			self.combo = ""
+			self.is_combo_valid = true
 			self.last_input_sec = 0
 			self.rank = nil
 
@@ -64,8 +67,33 @@ function M:on_key()
 			return
 		end
 
+		local readable_entered_key = vim.fn.keytrans(entered_key)
+		if
+			readable_entered_key:match("Mouse")
+			or readable_entered_key:match("Release")
+			or readable_entered_key:match("Middle")
+			or readable_entered_key:match("Scroll")
+			or readable_entered_key:match("Drag")
+		then
+			self.is_combo_valid = false
+		end
+
 		self.last_input_sec = 0
 		self.combo = self.combo .. entered_key
+
+		if not self.is_combo_valid then
+			local invalid_rank = constants.RANK_LABEL.DULL
+
+			if invalid_rank ~= self.rank then
+				self.ui:render(invalid_rank)
+			end
+
+			self.rank = invalid_rank
+
+			logger.log(("%s: %s\n%s"):format("Rank (invalidated)", self.rank, self.combo))
+
+			return
+		end
 
 		local combo_entropy = self:get_combo_entropy()
 		local new_rank = self:get_display_rank(combo_entropy)
@@ -90,7 +118,6 @@ function M:on_key()
 	end
 end
 
--- TODO permanently set to Dull when mouse is used
 ---@private
 ---@return number
 function M:get_combo_entropy()
