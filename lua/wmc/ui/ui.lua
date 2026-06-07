@@ -1,11 +1,10 @@
 ---@class wmc.ui
----@field new fun(self): wmc.ui
 ---@field render fun(self, rank_label: wmc.rank_label)
 ---@field clear fun(self)
 local M = {}
 
 ---@return wmc.ui
-function M:create()
+function M:new()
 	local config = require("wmc.config")
 
 	if config.options.image_ui_enabled then

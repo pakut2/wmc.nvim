@@ -1,12 +1,13 @@
 local constants = require("wmc.constants")
 local logger = require("wmc.logger")
-local utils = require("wmc.utils")
-local ui = require("wmc.ui.text")
+local timer = require("wmc.utils.timer")
+local ring_buffer = require("wmc.utils.ring_buffer")
+local ui = require("wmc.ui.ui")
 
 ---@class wmc.ranker
----@field private combo string
+---@field private combo wmc.ring_buffer
 ---@field private is_combo_valid boolean
----@field private rank wmc.rank_label|nil ---? ring buffer
+---@field private rank wmc.rank_label|nil
 ---@field private last_input_sec number
 ---@field private watcher uv.uv_timer_t
 ---@field private ui wmc.text_ui
@@ -15,7 +16,7 @@ local M = {}
 ---@return wmc.ranker
 function M:new()
 	local ranker = {
-		combo = "",
+		combo = ring_buffer:new(30),
 		is_combo_valid = true,
 		rank = nil,
 		last_input_sec = 0,
@@ -32,9 +33,9 @@ end
 
 ---@private
 function M:start_combo_watcher()
-	local watcher, err = utils.set_interval(500, function()
+	local watcher, err = timer.set_interval(500, function()
 		if self.last_input_sec >= constants.RANK_IDLE_TTL_SEC then
-			self.combo = ""
+			self.combo:clear()
 			self.is_combo_valid = true
 			self.last_input_sec = 0
 			self.rank = nil
@@ -57,6 +58,8 @@ end
 ---@return fun(key: string, typed: string): string?
 function M:on_key()
 	return function(key, typed)
+		self.last_input_sec = 0
+
 		local current_mode = vim.api.nvim_get_mode().mode
 		if current_mode:match("^i") then
 			return
@@ -66,6 +69,8 @@ function M:on_key()
 		if not entered_key or #entered_key == 0 then
 			return
 		end
+
+		self.combo:append(entered_key)
 
 		local readable_entered_key = vim.fn.keytrans(entered_key)
 		if
@@ -78,9 +83,6 @@ function M:on_key()
 			self.is_combo_valid = false
 		end
 
-		self.last_input_sec = 0
-		self.combo = self.combo .. entered_key
-
 		if not self.is_combo_valid then
 			local invalid_rank = constants.RANK_LABEL.DULL
 
@@ -90,7 +92,13 @@ function M:on_key()
 
 			self.rank = invalid_rank
 
-			logger.log(("%s: %s\n%s"):format("Rank (invalidated)", self.rank, self.combo))
+			logger.log(
+				("Length: %d, Rank - %s (Invalid), %s"):format(
+					self.combo:get_length(),
+					self.rank,
+					self.combo:to_string()
+				)
+			)
 
 			return
 		end
@@ -107,12 +115,12 @@ function M:on_key()
 		logger.log(
 			("%s: %d, %s: %f, %s: %s\n%s"):format(
 				"Length",
-				#self.combo,
+				self.combo:get_length(),
 				"Entropy",
 				combo_entropy,
 				"Rank",
 				self.rank,
-				self.combo
+				self.combo:to_string()
 			)
 		)
 	end
@@ -121,15 +129,13 @@ end
 ---@private
 ---@return number
 function M:get_combo_entropy()
-	local combo_length = #self.combo
+	local combo_length = self.combo:get_length()
 	if combo_length == 0 then
 		return 0
 	end
 
 	local char_occurrences = {}
-	for i = 1, combo_length do
-		local char = self.combo:sub(i, i)
-
+	for _, char in pairs(self.combo:get_buffer()) do
 		char_occurrences[char] = (char_occurrences[char] or 0) + 1
 	end
 
@@ -152,7 +158,7 @@ function M:get_display_rank(combo_entropy)
 	end
 
 	local next_rank = constants.RANK_PROGRESSION[self.rank]
-	if not next_rank or next_rank.min_entropy > combo_entropy or next_rank.min_length > #self.combo then
+	if not next_rank or next_rank.min_entropy > combo_entropy or next_rank.min_length > self.combo:get_length() then
 		return self.rank
 	end
 
