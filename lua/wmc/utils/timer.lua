@@ -10,7 +10,7 @@ function M.set_interval(interval, callback)
 		return nil, err
 	end
 
-	local _, err = timer:start(0, interval, function()
+	local _, err = timer:start(0, interval, function() -- luacheck: ignore 411
 		callback()
 	end)
 

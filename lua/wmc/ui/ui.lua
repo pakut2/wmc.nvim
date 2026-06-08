@@ -4,7 +4,7 @@
 local M = {}
 
 ---@return wmc.ui
-function M:new()
+function M.new()
 	local config = require("wmc.config")
 
 	if config.options.image_ui_enabled then

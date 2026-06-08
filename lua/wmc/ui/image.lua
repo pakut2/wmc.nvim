@@ -11,8 +11,8 @@ function M:new()
 end
 
 ---@param rank_label wmc.rank_label
-function M:render(rank_label) end
+function M.render(rank_label) end -- luacheck: ignore
 
-function M:clear() end
+function M.clear() end
 
 return M
