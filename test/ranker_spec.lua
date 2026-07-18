@@ -1,9 +1,9 @@
 describe("ranker", function()
 	local stub = require("luassert.stub")
-	local ui_stub = require("wmc.ui.ui")
+	local ui_stub = require("wmc.ui")
 	local timer_stub = require("wmc.utils.timer")
 
-	local ranker
+	local ranker = require("wmc.ranker")
 
 	local function fill_combo(combo)
 		for i = 1, #combo do
@@ -20,7 +20,7 @@ describe("ranker", function()
 	end)
 
 	before_each(function()
-		ranker = require("wmc.ranker")
+		ranker = ranker:new()
 	end)
 
 	after_each(function()

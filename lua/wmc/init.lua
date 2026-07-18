@@ -6,8 +6,8 @@ local M = {}
 ---@param opts? wmc.config
 function M.setup(opts)
 	config.setup(opts)
-end
 
-vim.on_key(ranker:on_key(), vim.g.wmc_namespace_id)
+	vim.on_key(ranker:new():on_key(), vim.g.wmc_namespace_id)
+end
 
 return M

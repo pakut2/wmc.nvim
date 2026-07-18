@@ -13,30 +13,25 @@ M.RANK_LABEL = {
 
 ---@class wmc.rank
 ---@field label wmc.rank_label
----@field min_entropy number
----@field min_length integer
+---@field min_score integer
 
 ---@type table<wmc.rank_label, wmc.rank>
 M.RANK_PROGRESSION = {
 	[M.RANK_LABEL.DULL] = {
 		label = M.RANK_LABEL.COOL,
-		min_entropy = 2,
-		min_length = 10,
+		min_score = 110,
 	},
 	[M.RANK_LABEL.COOL] = {
 		label = M.RANK_LABEL.BRAVO,
-		min_entropy = 2.5,
-		min_length = 15,
+		min_score = 200,
 	},
 	[M.RANK_LABEL.BRAVO] = {
 		label = M.RANK_LABEL.ABSOLUTE,
-		min_entropy = 3,
-		min_length = 20,
+		min_score = 300,
 	},
 	[M.RANK_LABEL.ABSOLUTE] = {
 		label = M.RANK_LABEL.STYLISH,
-		min_entropy = 3.5,
-		min_length = 25,
+		min_score = 390,
 	},
 }
 

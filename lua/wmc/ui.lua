@@ -1,9 +1,11 @@
 local constants = require("wmc.constants")
+local find_max_length = require("wmc.utils.string").find_max_length
 
----@class wmc.text_ui : wmc.ui
+---@class wmc.ui
 ---@field private window_id integer
 ---@field private buffer_id integer
 ---@field private extmark_id integer
+---@field private max_rendered_text_length integer
 ---@field private last_rendered_text string|nil
 local M = {}
 
@@ -16,15 +18,16 @@ M.RANK_HL_GROUP_NAME = {
 	[constants.RANK_LABEL.STYLISH] = "STYLISH",
 }
 
----@return wmc.text_ui
+---@return wmc.ui
 function M:new()
-	local text_ui = {
+	local ui = {
 		window_id = nil,
 		buffer_id = nil,
 		extmark_id = nil,
+		max_rendered_text_length = find_max_length(constants.RANK_LABEL),
 		last_rendered_text = nil,
 	}
-	setmetatable(text_ui, self)
+	setmetatable(ui, self)
 	self.__index = self
 
 	---@type table<wmc.rank_label, string>
@@ -43,19 +46,19 @@ function M:new()
 		})
 	end
 
-	text_ui:open_window()
+	ui:open_window()
 
 	vim.api.nvim_create_autocmd({ "TabEnter" }, {
 		desc = "WMC window persistence",
 		group = vim.api.nvim_create_augroup("wmc.ui", {}),
 		callback = function()
 			vim.schedule(function()
-				text_ui:reopen_window()
+				ui:reopen_window()
 			end)
 		end,
 	})
 
-	return text_ui
+	return ui
 end
 
 ---@private
@@ -67,11 +70,12 @@ function M:open_window()
 
 	-- TODO customizable options
 	self.window_id = vim.api.nvim_open_win(self.buffer_id, false, {
+		hide = true,
 		relative = "editor",
 		anchor = "NE",
 		row = 1,
-		col = vim.o.columns - 10,
-		width = 10,
+		col = 1,
+		width = 1,
 		height = 1,
 		zindex = 50,
 		style = "minimal",
@@ -91,11 +95,11 @@ end
 
 ---@private
 function M:reopen_window()
-	if self.buffer_id and vim.api.nvim_buf_is_valid(self.buffer_id) then
+	if self:is_buffer_active() then
 		vim.api.nvim_buf_delete(self.buffer_id, { force = true })
 	end
 
-	if self.window_id and vim.api.nvim_win_is_valid(self.window_id) then
+	if self:is_window_active() then
 		vim.api.nvim_win_close(self.window_id, true)
 	end
 
@@ -109,7 +113,7 @@ end
 ---@param rank_label wmc.rank_label
 function M:render(rank_label)
 	vim.schedule(function()
-		if not self.buffer_id or not vim.api.nvim_buf_is_valid(self.buffer_id) then
+		if not self:is_window_active() or not self:is_buffer_active() then
 			return
 		end
 
@@ -122,6 +126,14 @@ function M:render(rank_label)
 			extmark_options.id = self.extmark_id
 		end
 
+		vim.api.nvim_win_set_config(self.window_id, {
+			hide = false,
+			relative = "editor",
+			row = 1,
+			col = vim.o.columns - (self.max_rendered_text_length - #rank_label) - 5,
+			width = #rank_label,
+		})
+
 		self.extmark_id = vim.api.nvim_buf_set_extmark(self.buffer_id, vim.g.wmc_namespace_id, 0, 0, extmark_options)
 		self.last_rendered_text = rank_label
 	end)
@@ -129,13 +141,28 @@ end
 
 function M:clear()
 	vim.schedule(function()
-		if not self.buffer_id or not vim.api.nvim_buf_is_valid(self.buffer_id) then
+		if not self:is_window_active() or not self:is_buffer_active() then
 			return
 		end
 
-		vim.api.nvim_buf_clear_namespace(self.buffer_id, vim.g.wmc_namespace_id, 0, -1)
 		self.last_rendered_text = nil
+
+		vim.api.nvim_win_set_config(self.window_id, {
+			hide = true,
+		})
 	end)
+end
+
+---@private
+---@return boolean
+function M:is_window_active()
+	return self.window_id and vim.api.nvim_win_is_valid(self.window_id)
+end
+
+---@private
+---@return boolean
+function M:is_buffer_active()
+	return self.buffer_id and vim.api.nvim_buf_is_valid(self.buffer_id)
 end
 
 return M

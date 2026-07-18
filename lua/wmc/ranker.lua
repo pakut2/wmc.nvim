@@ -2,7 +2,7 @@ local constants = require("wmc.constants")
 local logger = require("wmc.logger")
 local timer = require("wmc.utils.timer")
 local ring_buffer = require("wmc.utils.ring_buffer")
-local ui = require("wmc.ui.ui")
+local ui = require("wmc.ui")
 
 ---@class wmc.ranker
 ---@field private combo wmc.ring_buffer
@@ -10,7 +10,7 @@ local ui = require("wmc.ui.ui")
 ---@field private rank wmc.rank_label|nil
 ---@field private last_input_sec number
 ---@field private watcher uv.uv_timer_t
----@field private ui wmc.text_ui
+---@field private ui wmc.ui
 local M = {}
 
 ---@return wmc.ranker
@@ -93,10 +93,10 @@ function M:on_key()
 			self.rank = invalid_rank
 
 			logger.log(
-				("Length: %d, Rank - %s (Invalid), %s"):format(
+				("Length: %d, Rank - %s (Invalid)\n%s"):format(
 					self.combo:get_length(),
 					self.rank,
-					self.combo:to_string()
+					vim.fn.keytrans(self.combo:to_string())
 				)
 			)
 
@@ -104,7 +104,9 @@ function M:on_key()
 		end
 
 		local combo_entropy = self:get_combo_entropy()
-		local new_rank = self:get_display_rank(combo_entropy)
+		local combo_score = self:get_combo_score(combo_entropy)
+
+		local new_rank = self:get_display_rank(combo_entropy, combo_score)
 
 		if new_rank and new_rank ~= self.rank then
 			self.ui:render(new_rank)
@@ -113,14 +115,16 @@ function M:on_key()
 		self.rank = new_rank
 
 		logger.log(
-			("%s: %d, %s: %f, %s: %s\n%s"):format(
+			("%s: %d, %s: %f, %s: %f, %s: %s\n%s"):format(
 				"Length",
 				self.combo:get_length(),
 				"Entropy",
 				combo_entropy,
+				"Score",
+				combo_score,
 				"Rank",
 				self.rank,
-				self.combo:to_string()
+				vim.fn.keytrans(self.combo:to_string())
 			)
 		)
 	end
@@ -150,19 +154,28 @@ function M:get_combo_entropy()
 	return entropy
 end
 
+---@private
 ---@param combo_entropy number
+---@param combo_score number
 ---@return wmc.rank_label|nil
-function M:get_display_rank(combo_entropy)
+function M:get_display_rank(combo_entropy, combo_score)
 	if not self.rank and combo_entropy > 1.5 then
 		return constants.RANK_LABEL.DULL
 	end
 
 	local next_rank = constants.RANK_PROGRESSION[self.rank]
-	if not next_rank or next_rank.min_entropy > combo_entropy or next_rank.min_length > self.combo:get_length() then
+	if not next_rank or next_rank.min_score > combo_score then
 		return self.rank
 	end
 
 	return next_rank.label
 end
 
-return M:new()
+---@private
+---@param combo_entropy number
+---@return number
+function M:get_combo_score(combo_entropy)
+	return math.pow(combo_entropy, 2) * self.combo:get_length()
+end
+
+return M
