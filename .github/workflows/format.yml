@@ -1,0 +1,17 @@
+name: Format
+on: pull_request
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: stylua
+
+      - name: Format
+        run: stylua --check .

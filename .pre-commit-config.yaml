@@ -14,3 +14,10 @@ repos:
         types: [lua]
         files: ^lua/.*\.lua$
 
+      - id: test
+        name: Test
+        entry: ./test.sh
+        language: system
+        pass_filenames: false
+        types: [lua]
+
