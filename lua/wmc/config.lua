@@ -10,7 +10,7 @@ local M = {}
 ---@type wmc.config
 M.default = {
 	logger = {
-		enabled = false,
+		enabled = true,
 		log_file_path = vim.fn.stdpath("data") .. "/wmc.log",
 	},
 }
