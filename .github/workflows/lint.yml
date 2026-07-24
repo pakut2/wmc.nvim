@@ -1,0 +1,18 @@
+name: Lint
+on: pull_request
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup
+        run: |
+          sudo apt update
+          sudo apt install luarocks -y
+          sudo luarocks install luacheck
+
+      - name: Lint
+        run: luacheck lua/

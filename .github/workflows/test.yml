@@ -1,0 +1,17 @@
+name: Test
+on: pull_request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        neovim_version: ["v0.11.7", "v0.12.0"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test
+        uses: nvim-neorocks/nvim-busted-action@v1
+        with:
+          nvim_version: ${{ matrix.neovim_version }}
