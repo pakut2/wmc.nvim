@@ -8,11 +8,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: "5.1"
+
+      - uses: leafo/gh-actions-luarocks@v5
+
       - name: Setup
-        run: |
-          sudo apt update
-          sudo apt install luarocks -y
-          sudo luarocks install luacheck
+        run: luarocks install luacheck
 
       - name: Lint
         run: luacheck lua/
