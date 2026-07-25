@@ -1,5 +1,5 @@
 *wmc.nvim.txt*
-                             For Neovim >= 0.11.0    Last change: 2026 July 24
+                             For Neovim >= 0.11.0    Last change: 2026 July 25
 
 ==============================================================================
 Table of Contents                                 *wmc.nvim-table-of-contents*
