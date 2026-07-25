@@ -46,6 +46,8 @@ function M:new()
 		})
 	end
 
+	vim.api.nvim_set_hl(vim.g.wmc_namespace_id, "FloatBorder", { link = "Float" })
+
 	ui:open_window()
 
 	vim.api.nvim_create_autocmd({ "TabEnter" }, {
@@ -68,21 +70,24 @@ function M:open_window()
 		error("Failed to create window buffer")
 	end
 
-	-- TODO customizable options
-	self.window_id = vim.api.nvim_open_win(self.buffer_id, false, {
-		hide = true,
-		relative = "editor",
-		anchor = "NE",
-		row = 1,
-		col = 1,
-		width = 1,
-		height = 1,
-		zindex = 50,
-		style = "minimal",
-		border = "none",
-		focusable = false,
-		noautocmd = true,
-	})
+	self.window_id = vim.api.nvim_open_win(
+		self.buffer_id,
+		false,
+		vim.tbl_deep_extend("force", {
+			hide = true,
+			relative = "editor",
+			anchor = "NE",
+			row = 1,
+			col = 1,
+			width = 1,
+			height = 1,
+			zindex = 50,
+			style = "minimal",
+			border = "none",
+			focusable = false,
+			noautocmd = true,
+		}, require("wmc.config").options.ui)
+	)
 	if self.window_id == 0 then
 		error("Failed to create window")
 	end
@@ -117,6 +122,8 @@ function M:render(rank_label)
 			return
 		end
 
+		local ui_config = require("wmc.config").options.ui
+
 		local extmark_options = {
 			virt_text = { { rank_label, M.RANK_HL_GROUP_NAME[rank_label] } },
 			virt_text_win_col = 0,
@@ -129,8 +136,8 @@ function M:render(rank_label)
 		vim.api.nvim_win_set_config(self.window_id, {
 			hide = false,
 			relative = "editor",
-			row = 1,
-			col = vim.o.columns - (self.max_rendered_text_length - #rank_label) - 5,
+			row = ui_config.row,
+			col = ui_config.col - (self.max_rendered_text_length - #rank_label),
 			width = #rank_label,
 		})
 

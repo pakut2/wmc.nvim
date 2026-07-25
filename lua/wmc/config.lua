@@ -2,16 +2,31 @@ local M = {}
 
 ---@class (exact) wmc.config
 ---@field logger wmc.config.logger
+---@field ui wmc.config.ui
 
 ---@class (exact) wmc.config.logger
 ---@field enabled boolean
 ---@field log_file_path string|nil
+
+---@class (exact) wmc.config.ui
+---@field anchor string
+---@field row number
+---@field col number
+---@field zindex number
+---@field border string
 
 ---@type wmc.config
 M.default = {
 	logger = {
 		enabled = false,
 		log_file_path = vim.fn.stdpath("data") .. "/wmc.log",
+	},
+	ui = {
+		anchor = "NE",
+		row = 1,
+		col = vim.o.columns - 5,
+		zindex = 50,
+		border = "none",
 	},
 }
 
@@ -35,9 +50,16 @@ end
 function M.validate(config)
 	local validation_errors = {}
 
-	M.validate_entry({ logger = { config.logger, "table", false } }, validation_errors)
-	M.validate_entry({ enabled = { config.logger.enabled, "boolean", false } }, validation_errors)
+	M.validate_entry({ logger = { config.logger, "table", true } }, validation_errors)
+	M.validate_entry({ enabled = { config.logger.enabled, "boolean", true } }, validation_errors)
 	M.validate_entry({ log_file_path = { config.logger.log_file_path, "string", true } }, validation_errors)
+
+	M.validate_entry({ ui = { config.ui, "table", true } }, validation_errors)
+	M.validate_entry({ anchor = { config.ui.anchor, "string", true } }, validation_errors)
+	M.validate_entry({ row = { config.ui.row, "number", true } }, validation_errors)
+	M.validate_entry({ col = { config.ui.col, "number", true } }, validation_errors)
+	M.validate_entry({ zindex = { config.ui.zindex, "number", true } }, validation_errors)
+	M.validate_entry({ border = { config.ui.border, "string", true } }, validation_errors)
 
 	if #validation_errors == 0 then
 		return nil
