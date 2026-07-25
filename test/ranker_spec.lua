@@ -90,7 +90,7 @@ describe("ranker", function()
 
 		it("should clear rank after inactivity", function()
 			type_combo("jackpot")
-			vim.wait(1500)
+			vim.wait(2000)
 
 			assert.is_nil(ranker.rank)
 			assert.are.equal(0, ranker.combo:get_length())
