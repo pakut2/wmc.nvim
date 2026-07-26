@@ -4,7 +4,7 @@ Vim is all about making text editing as efficient and ergonomic as possible. But
 
 ## Showcase
 
-
+https://github.com/user-attachments/assets/7bbc3a28-baf6-4de7-b521-588c6201375d
 
 ## Requirements
 
