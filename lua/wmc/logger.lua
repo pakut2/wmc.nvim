@@ -7,12 +7,6 @@ function M.log(message)
 		return
 	end
 
-	if not logger_config.log_file_path then
-		print(M.format_message(message))
-
-		return
-	end
-
 	local log_file, err = io.open(logger_config.log_file_path, "a")
 	if not log_file then
 		print(err)

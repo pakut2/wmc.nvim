@@ -70,24 +70,24 @@ function M:open_window()
 		error("Failed to create window buffer")
 	end
 
-	self.window_id = vim.api.nvim_open_win(
-		self.buffer_id,
-		false,
-		vim.tbl_deep_extend("force", {
-			hide = true,
-			relative = "editor",
-			anchor = "NE",
-			row = 1,
-			col = 1,
-			width = 1,
-			height = 1,
-			zindex = 50,
-			style = "minimal",
-			border = "none",
-			focusable = false,
-			noautocmd = true,
-		}, require("wmc.config").options.ui)
-	)
+	local window_config = vim.tbl_deep_extend("force", {
+		hide = true,
+		relative = "editor",
+		anchor = "NE",
+		width = 1,
+		height = 1,
+		zindex = 50,
+		style = "minimal",
+		border = "none",
+		focusable = false,
+		noautocmd = true,
+	}, require("wmc.config").options.ui)
+
+	-- Override functions passed in config for the initial hidden window
+	window_config.row = 1
+	window_config.col = 1
+
+	self.window_id = vim.api.nvim_open_win(self.buffer_id, false, window_config)
 	if self.window_id == 0 then
 		error("Failed to create window")
 	end
@@ -136,8 +136,8 @@ function M:render(rank_label)
 		vim.api.nvim_win_set_config(self.window_id, {
 			hide = false,
 			relative = "editor",
-			row = ui_config.row,
-			col = ui_config.col - (self.max_rendered_text_length - #rank_label),
+			row = self.resolve_window_position(ui_config.row),
+			col = self.resolve_window_position(ui_config.col) - (self.max_rendered_text_length - #rank_label),
 			width = #rank_label,
 		})
 
@@ -170,6 +170,17 @@ end
 ---@return boolean
 function M:is_buffer_active()
 	return self.buffer_id and vim.api.nvim_buf_is_valid(self.buffer_id)
+end
+
+---@private
+---@param position number|fun(): number
+---@return number
+function M.resolve_window_position(position)
+	if type(position) == "function" then
+		return position()
+	end
+
+	return position
 end
 
 return M
