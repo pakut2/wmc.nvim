@@ -1,7 +1,7 @@
 local M = {}
 
 function M.check()
-	vim.health.start("dmc.nvim")
+	vim.health.start("wmc.nvim")
 
 	if vim.fn.has("nvim-0.11.0") == 1 then
 		vim.health.ok("Neovim version >= 0.11.0")
