@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/pakut2/wmc.nvim/compare/v1.0.1...v1.0.2) (2026-07-26)
+
+
+### Bug Fixes
+
+* **ci:** impersonated vimdoc generation ([8531f75](https://github.com/pakut2/wmc.nvim/commit/8531f75f201867b0638f9ab224dd584d50195ca1))
+
 ## [1.0.1](https://github.com/pakut2/wmc.nvim/compare/v1.0.0...v1.0.1) (2026-07-26)
 
 
