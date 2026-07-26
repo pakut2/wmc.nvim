@@ -23,6 +23,9 @@ ranks.
 SHOWCASE                                     *wmc.nvim-wrist-may-cry-showcase*
 
 
+https://github.com/user-attachments/assets/7bbc3a28-baf6-4de7-b521-588c6201375d
+
+
 REQUIREMENTS                             *wmc.nvim-wrist-may-cry-requirements*
 
 - Neovim >= 0.11.0
