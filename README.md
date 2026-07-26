@@ -12,10 +12,10 @@ https://github.com/user-attachments/assets/7bbc3a28-baf6-4de7-b521-588c6201375d
 
 ## Installation
 
-### [lazy](https://github.com/folke/lazy.nvim)
+### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
-{
+return {
     "pakut2/wmc.nvim",
     lazy = false,
     version = "*", -- use `branch = "main"`, to reference the latest unstable changes
