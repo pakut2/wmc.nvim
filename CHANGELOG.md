@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/pakut2/wmc.nvim/compare/v1.0.0...v1.0.1) (2026-07-26)
+
+
+### Bug Fixes
+
+* **ci:** impersonated github release ([d152c60](https://github.com/pakut2/wmc.nvim/commit/d152c6055584d1cdca60499f5c77db29ae1bcb12))
+
 ## 1.0.0 (2026-07-26)
 
 
