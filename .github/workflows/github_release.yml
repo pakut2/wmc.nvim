@@ -1,0 +1,17 @@
+name: GitHub Release
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          release-type: simple
