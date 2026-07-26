@@ -34,10 +34,10 @@ REQUIREMENTS                             *wmc.nvim-wrist-may-cry-requirements*
 INSTALLATION                             *wmc.nvim-wrist-may-cry-installation*
 
 
-LAZY ~
+LAZY.NVIM ~
 
 >lua
-    {
+    return {
         "pakut2/wmc.nvim",
         lazy = false,
         version = "*", -- use `branch = "main"`, to reference the latest unstable changes
