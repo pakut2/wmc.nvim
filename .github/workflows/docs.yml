@@ -6,11 +6,11 @@ on:
 jobs:
   docs:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.DOCS_GITHUB_TOKEN }}
 
       - name: Generate Vimdoc
         uses: kdheepak/panvimdoc@main
@@ -22,7 +22,7 @@ jobs:
       - name: Persist Generated Vimdoc
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "chore(docs): update vimdoc"
+          commit_message: "chore(docs): update vimdoc [skip ci]"
           commit_user_name: "github-actions[bot]"
           commit_user_email: "github-actions[bot]@users.noreply.github.com"
           commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
