@@ -5,7 +5,7 @@ source = {
 	url = "git+https://github.com/pakut2/" .. package,
 }
 description = {
-	summary = "Modify files with STYLE in Neovim",
+	summary = "Edit with STYLE in Neovim",
 	labels = { "neovim", "neovim-plugin", "wmc" },
 	homepage = "https://github.com/pakut2/" .. package,
 	license = "MIT",
