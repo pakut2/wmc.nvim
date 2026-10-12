@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/pakut2/wmc.nvim/compare/v1.0.3...v1.1.0) (2026-10-12)
+
+
+### Features
+
+* progress bar ([4455c5c](https://github.com/pakut2/wmc.nvim/commit/4455c5cc4610577c12685ae8e57d96519ad9057a))
+* progress bar ([afb1c74](https://github.com/pakut2/wmc.nvim/commit/afb1c74045f9de69bcff9cce4c9fd250d81400ee))
+
 ## [1.0.3](https://github.com/pakut2/wmc.nvim/compare/v1.0.2...v1.0.3) (2026-07-26)
 
 
