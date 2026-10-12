@@ -1,3 +1,4 @@
+local config = require("wmc.config")
 local constants = require("wmc.constants")
 local find_max_length = require("wmc.utils.string").find_max_length
 
@@ -7,6 +8,7 @@ local find_max_length = require("wmc.utils.string").find_max_length
 ---@field private extmark_id integer
 ---@field private max_rendered_text_length integer
 ---@field private last_rendered_text string|nil
+---@field private last_renderered_progress number|nil
 local M = {}
 
 ---@type table<wmc.rank_label, string>
@@ -75,17 +77,18 @@ function M:open_window()
 		relative = "editor",
 		anchor = "NE",
 		width = 1,
-		height = 1,
+		height = config.options.ui.progress_bar.enabled and 2 or 1,
 		zindex = 50,
 		style = "minimal",
 		border = "none",
 		focusable = false,
 		noautocmd = true,
-	}, require("wmc.config").options.ui)
+	}, config.options.ui)
 
 	-- Override functions passed in config for the initial hidden window
 	window_config.row = 1
 	window_config.col = 1
+	window_config.progress_bar = nil
 
 	self.window_id = vim.api.nvim_open_win(self.buffer_id, false, window_config)
 	if self.window_id == 0 then
@@ -111,23 +114,34 @@ function M:reopen_window()
 	self:open_window()
 
 	if self.last_rendered_text then
-		self:render(self.last_rendered_text)
+		self:render(self.last_rendered_text, self.last_renderered_progress)
 	end
 end
 
 ---@param rank_label wmc.rank_label
-function M:render(rank_label)
+---@param rank_progress number|nil
+function M:render(rank_label, rank_progress)
 	vim.schedule(function()
 		if not self:is_window_active() or not self:is_buffer_active() then
 			return
 		end
 
-		local ui_config = require("wmc.config").options.ui
+		local label_color = M.RANK_HL_GROUP_NAME[rank_label]
+		local width = config.options.ui.progress_bar.enabled
+				and self.max_rendered_text_length + config.options.ui.progress_bar.extra_width
+			or #rank_label
 
 		local extmark_options = {
-			virt_text = { { rank_label, M.RANK_HL_GROUP_NAME[rank_label] } },
-			virt_text_win_col = 0,
+			virt_text = { { rank_label, label_color } },
+			virt_text_win_col = config.options.ui.progress_bar.enabled and math.floor((width / 2) - (#rank_label / 2))
+				or 0,
 		}
+
+		if config.options.ui.progress_bar.enabled and rank_progress then
+			extmark_options.virt_lines = {
+				{ { self.prepare_progress_bar(rank_progress, width), label_color } },
+			}
+		end
 
 		if self.extmark_id then
 			extmark_options.id = self.extmark_id
@@ -136,14 +150,27 @@ function M:render(rank_label)
 		vim.api.nvim_win_set_config(self.window_id, {
 			hide = false,
 			relative = "editor",
-			row = self.resolve_window_position(ui_config.row),
-			col = self.resolve_window_position(ui_config.col) - (self.max_rendered_text_length - #rank_label),
-			width = #rank_label,
+			row = self.resolve_window_position(config.options.ui.row),
+			col = config.options.ui.progress_bar.enabled and self.resolve_window_position(config.options.ui.col)
+				or self.resolve_window_position(config.options.ui.col)
+					- (self.max_rendered_text_length - #rank_label),
+			width = width,
 		})
 
 		self.extmark_id = vim.api.nvim_buf_set_extmark(self.buffer_id, vim.g.wmc_namespace_id, 0, 0, extmark_options)
 		self.last_rendered_text = rank_label
+		self.last_renderered_progress = rank_progress
 	end)
+end
+
+---@private
+---@param progress number
+---@param width number
+---@return string
+function M.prepare_progress_bar(progress, width)
+	local completion_width = math.floor(progress * width + 0.5)
+
+	return ("█"):rep(completion_width) .. ("░"):rep(width - completion_width)
 end
 
 function M:clear()
@@ -153,6 +180,7 @@ function M:clear()
 		end
 
 		self.last_rendered_text = nil
+		self.last_renderered_progress = nil
 
 		vim.api.nvim_win_set_config(self.window_id, {
 			hide = true,

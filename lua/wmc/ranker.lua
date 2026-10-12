@@ -1,3 +1,4 @@
+local config = require("wmc.config")
 local constants = require("wmc.constants")
 local logger = require("wmc.logger")
 local timer = require("wmc.utils.timer")
@@ -7,7 +8,8 @@ local ui = require("wmc.ui")
 ---@class wmc.ranker
 ---@field private combo wmc.ring_buffer
 ---@field private is_combo_valid boolean
----@field private rank wmc.rank_label|nil
+---@field private rank_label wmc.rank_label|nil
+---@field private rank_progression number|nil
 ---@field private last_input_sec number
 ---@field private watcher uv.uv_timer_t
 ---@field private ui wmc.ui
@@ -38,7 +40,8 @@ function M:start_combo_watcher()
 			self.combo:clear()
 			self.is_combo_valid = true
 			self.last_input_sec = 0
-			self.rank = nil
+			self.rank_label = nil
+			self.rank_progression = nil
 
 			self.ui:clear()
 
@@ -56,7 +59,7 @@ function M:start_combo_watcher()
 end
 
 ---@return fun(key: string, typed: string): string?
-function M:on_key()
+function M:on_key_entered()
 	return function(key, typed)
 		self.last_input_sec = 0
 
@@ -86,16 +89,17 @@ function M:on_key()
 		if not self.is_combo_valid then
 			local invalid_rank = constants.RANK_LABEL.DULL
 
-			if invalid_rank ~= self.rank then
-				self.ui:render(invalid_rank)
+			if invalid_rank ~= self.rank_label or self.rank_progression then
+				self.ui:render(invalid_rank, nil)
 			end
 
-			self.rank = invalid_rank
+			self.rank_label = invalid_rank
+			self.rank_progression = nil
 
 			logger.log(
 				("Length: %d, Rank - %s (Invalid)\n%s"):format(
 					self.combo:get_length(),
-					self.rank,
+					self.rank_label,
 					vim.fn.keytrans(self.combo:to_string())
 				)
 			)
@@ -107,12 +111,17 @@ function M:on_key()
 		local combo_score = self:get_combo_score(combo_entropy)
 
 		local new_rank = self:get_display_rank(combo_entropy, combo_score)
+		local rank_progression = new_rank
+				and config.options.ui.progress_bar.enabled
+				and self.get_rank_progression(new_rank, combo_score)
+			or nil
 
-		if new_rank and new_rank ~= self.rank then
-			self.ui:render(new_rank)
+		if new_rank and (new_rank ~= self.rank_label or rank_progression ~= self.rank_progression) then
+			self.ui:render(new_rank, rank_progression)
 		end
 
-		self.rank = new_rank
+		self.rank_label = new_rank
+		self.rank_progression = rank_progression
 
 		logger.log(
 			("%s: %d, %s: %f, %s: %f, %s: %s\n%s"):format(
@@ -123,7 +132,7 @@ function M:on_key()
 				"Score",
 				combo_score,
 				"Rank",
-				self.rank,
+				self.rank_label,
 				vim.fn.keytrans(self.combo:to_string())
 			)
 		)
@@ -156,26 +165,44 @@ end
 
 ---@private
 ---@param combo_entropy number
+---@return number
+function M:get_combo_score(combo_entropy)
+	return math.pow(combo_entropy, 2) * self.combo:get_length()
+end
+
+---@private
+---@param combo_entropy number
 ---@param combo_score number
 ---@return wmc.rank_label|nil
 function M:get_display_rank(combo_entropy, combo_score)
-	if not self.rank and combo_entropy > 1.5 then
+	if not self.rank_label and combo_entropy > 1.5 then
 		return constants.RANK_LABEL.DULL
 	end
 
-	local next_rank = constants.RANK_PROGRESSION[self.rank]
+	local next_rank = constants.RANK_PROGRESSION[self.rank_label]
 	if not next_rank or next_rank.min_score > combo_score then
-		return self.rank
+		return self.rank_label
 	end
 
 	return next_rank.label
 end
 
 ---@private
----@param combo_entropy number
----@return number
-function M:get_combo_score(combo_entropy)
-	return math.pow(combo_entropy, 2) * self.combo:get_length()
+---@param combo_rank wmc.rank_label
+---@param combo_score number
+---@return number|nil
+function M.get_rank_progression(combo_rank, combo_score)
+	if not combo_rank then
+		return nil
+	end
+
+	local rank_score_bounds = constants.RANK_SCORE[combo_rank]
+	if not rank_score_bounds.max_score then
+		return nil
+	end
+
+	return math.max(combo_score - rank_score_bounds.min_score, 0)
+		/ (rank_score_bounds.max_score - rank_score_bounds.min_score)
 end
 
 return M

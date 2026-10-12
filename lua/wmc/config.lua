@@ -15,6 +15,11 @@ local M = {}
 ---@field col number|fun(): number
 ---@field zindex number
 ---@field border string
+---@field progress_bar wmc.config.ui.progress_bar
+
+---@class (exact) wmc.config.ui.progress_bar
+---@field enabled boolean
+---@field extra_width integer
 
 ---@type wmc.config
 M.default = {
@@ -27,6 +32,10 @@ M.default = {
 		end,
 		zindex = 50,
 		border = "none",
+		progress_bar = {
+			enabled = false,
+			extra_width = 4,
+		},
 	},
 	logger = {
 		enabled = false,
@@ -62,6 +71,10 @@ function M.validate(config)
 	M.validate_entry({ col = { config.ui.col, { "number", "function" }, true } }, validation_errors)
 	M.validate_entry({ zindex = { config.ui.zindex, "number", true } }, validation_errors)
 	M.validate_entry({ border = { config.ui.border, { "string", "table" }, true } }, validation_errors)
+
+	M.validate_entry({ progress_bar = { config.ui.progress_bar, "table", true } }, validation_errors)
+	M.validate_entry({ enabled = { config.ui.progress_bar.enabled, "boolean", true } }, validation_errors)
+	M.validate_entry({ padding = { config.ui.progress_bar.extra_width, "number", true } }, validation_errors)
 
 	M.validate_entry({ logger = { config.logger, "table", true } }, validation_errors)
 	M.validate_entry({ enabled = { config.logger.enabled, "boolean", true } }, validation_errors)

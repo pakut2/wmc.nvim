@@ -54,11 +54,11 @@ require("wmc").setup({
 })
 ```
 
-| Option  | Explanation |
+| Option | Explanation |
 |-|-|
 | enabled | Toggle `wmc` |
-| ui      | Configure style rank display window (partially derived from `vim.api.keyset.win_config`). `row` and `col` support passing a function for dynamic Neovim window resize handling |
-| logger  | Toggle debug logging and change log destination |
+| ui | Configure style rank display window (partially derived from `vim.api.keyset.win_config`). `row` and `col` support passing a function for dynamic Neovim window resize handling. `progress_bar` configures rank progression visualization |
+| logger | Toggle debug logging and change log destination |
 
 ## Development
 
