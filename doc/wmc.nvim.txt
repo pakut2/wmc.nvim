@@ -1,5 +1,5 @@
 *wmc.nvim.txt*
-                             For Neovim >= 0.11.0    Last change: 2026 July 26
+                          For Neovim >= 0.11.0    Last change: 2026 October 12
 
 ==============================================================================
 Table of Contents                                 *wmc.nvim-table-of-contents*
@@ -88,7 +88,8 @@ DEFAULT SETTINGS ~
                                       vim.api.keyset.win_config). row and
                                       col support passing a function for
                                       dynamic Neovim window resize
-                                      handling
+                                      handling. progress_bar configures
+                                      rank progression visualization
 
   logger                              Toggle debug logging and change log
                                       destination
