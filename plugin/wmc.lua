@@ -7,5 +7,5 @@ vim.schedule(function()
 		return
 	end
 
-	vim.on_key(require("wmc.ranker"):new():on_key(), vim.g.wmc_namespace_id)
+	vim.on_key(require("wmc.ranker"):new():on_key_entered(), vim.g.wmc_namespace_id)
 end)
