@@ -20,7 +20,8 @@ function M:new()
 	local ranker = {
 		combo = ring_buffer:new(30),
 		is_combo_valid = true,
-		rank = nil,
+		rank_label = nil,
+		rank_progression = nil,
 		last_input_sec = 0,
 		watcher = nil,
 		ui = ui:new(),
