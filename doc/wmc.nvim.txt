@@ -1,5 +1,5 @@
 *wmc.nvim.txt*
-                          For Neovim >= 0.11.0    Last change: 2026 October 12
+                          For Neovim >= 0.11.0    Last change: 2026 October 13
 
 ==============================================================================
 Table of Contents                                 *wmc.nvim-table-of-contents*
@@ -70,6 +70,10 @@ DEFAULT SETTINGS ~
             end,
             zindex = 50,
             border = "none",
+            progress_bar = {
+                enabled = false,
+                extra_width = 4,
+            },
         },
         logger = {
             enabled = false,
