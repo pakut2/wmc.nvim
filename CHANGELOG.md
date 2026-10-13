@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/pakut2/wmc.nvim/compare/v1.1.0...v1.1.1) (2026-10-13)
+
+
+### Bug Fixes
+
+* **ranker:** initialize all properties with 0 values ([b46dfeb](https://github.com/pakut2/wmc.nvim/commit/b46dfebd879881fa8f6ea2b4b0d8d56cdb731e9b))
+
 ## [1.1.0](https://github.com/pakut2/wmc.nvim/compare/v1.0.3...v1.1.0) (2026-10-12)
 
 
