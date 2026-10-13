@@ -46,6 +46,10 @@ require("wmc").setup({
 		end,
 		zindex = 50,
 		border = "none",
+		progress_bar = {
+			enabled = false,
+			extra_width = 4,
+		},
 	},
 	logger = {
 		enabled = false,
